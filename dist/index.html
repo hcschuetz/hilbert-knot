@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="color-scheme" content="light dark" />
+		<title>Hilbert Curve + Endless Knot</title>
+		<style>
+			body {
+				font-family: Helvetica, Arial, sans-serif;
+			}
+			main {
+				max-width: 600px;
+			}
+			.controls {
+				display: grid;
+				grid-template-columns: 3em 15em 4em;
+				column-gap: 1em;
+				align-items: center;
+				margin-bottom: 1em;
+			}
+		</style>
+		<script type="module" crossorigin src="/assets/index-Bi4FaWRp.js"></script>
+	</head>
+	<body>
+		<main>
+			<h1>Hilbert Curve + Endless Knot</h1>
+			<div><em>(By <a href="/" target="_blank" rel="noopener noreferrer">Heribert
+				Schütz</a>)</em></div>
+			<p>
+				The demo below draws a curve based on a "Hilbert polyline"
+				(a line with right angles approximating a Hilbert curve),
+				but with
+			</p>
+			<ul>
+				<li>
+						each vertex of that polyline replaced with an "<a
+						href="https://en.wikipedia.org/wiki/Endless_knot"
+						target="_blank" rel="noopener noreferrer">endless knot</a>"
+					and
+				</li>
+				<li>
+					each segment of the polyline replaced with two connections with the
+					orange line.
+				</li>
+			</ul>
+			<p>
+				The idea was taken from a <a
+					href="https://mastodon.gamedev.place/@idontlikenames/114223538423033043"
+					target="_blank" rel="noopener noreferrer">mastodon post</a> by <a
+					href="https://mastodon.gamedev.place/@idontlikenames"
+					target="_blank" rel="noopener noreferrer">꧁ᐊ𰻞ᵕ̣̣̣̣̣̣́́♛ᵕ̣̣̣̣̣̣́́𰻞ᐅ꧂</a>.
+				But there the endless knots are not connected by a Hilbert polyline
+				but by some other graph.
+			</p>
+			<p>
+				In either case the orange lines form a single loop.
+				This is always the case if the graph connecting the endless knots
+				is a <a href="https://en.wikipedia.org/wiki/Tree_(graph_theory)"
+					target="_blank" rel="noopener noreferrer">tree</a>.
+			</p>
+		</main>
+		<h2>Demo</h2>
+		<div id="app"></div>
+	</body>
+</html>
