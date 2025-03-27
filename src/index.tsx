@@ -1,5 +1,4 @@
 import { render } from 'preact';
-import { TargetedEvent } from 'preact/compat';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 // This could be created programmatically, but it was easier to draw manually:
@@ -22,7 +21,7 @@ const baseKnot = `
 ...#*##~##*#####*##~##*##~#
 ...#*##~##*******##~##*##~#
 ...#*##~###########~##*##~#
-#######~###########~##*##~#
+#######~###########~#####~#
 #~~~~~#~#~~~~~~~~~#~#~~~~~#
 #~#####~###########~#######
 #~##*########~########*#...
