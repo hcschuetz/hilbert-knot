@@ -102,17 +102,14 @@ export function App() {
 
 		// Draw (2**depth)**2 "endless knots"
 		for (let r = 0; r < n; r++) {
+			const r27 = r * 27;
 			for (let c = 0; c < n; c++) {
+				const c27 = c * 27;
 				const knot = (r+c) % 2 === 0 ? baseKnot : baseKnot2;
 				for (let i = 0; i < 27; i++) {
 					for (let j = 0; j < 27; j++) {
 						ctx.fillStyle = colors[knot[i][j]];
-						ctx.fillRect(
-							c * 27 + i,
-							r * 27 + j,
-							scale,
-							scale,
-						);
+						ctx.fillRect(c27 + i, r27 + j, 1, 1);
 					}
 				}
 			}
@@ -123,66 +120,26 @@ export function App() {
 		hilbertPolyLine(depth).map(([x, y], i, points) => {
 			if (i === 0) return;
 			const [xOld, yOld] = points[i-1];
-			// ctx.fillStyle = "#8f8";
-			// ctx.fillRect(
-			// 	Math.min(xOld, x) * 27 + 13.1,
-			// 	Math.min(yOld, y) * 27 + 13.1,
-			// 	Math.abs(x - xOld) * 27 + .8,
-			// 	Math.abs(y - yOld) * 27 + .8,
-			// );
+			const [xMid, yMid] = [(xOld + x) / 2 * 27, (yOld + y) / 2 * 27];
 			const parity = Boolean((Math.min(xOld, x) + Math.min(yOld, y)) % 2);
-			const vertical = x === xOld;
-			if (vertical === (y === yOld)) {
+			const [vertical, horizontal] = [x === xOld, y === yOld];
+			if (vertical === horizontal) {
 				throw "internal: connections should be either horizontal or vertical";
 			}
 			if (vertical) {
 				ctx.fillStyle = colors["~"];
-				ctx.fillRect(
-					(xOld + x) / 2 * 27 + (parity ? 7 : 13),
-					(yOld + y) / 2 * 27 + 11.5,
-					7,
-					4,
-				);
-
+				ctx.fillRect(xMid + (parity ? 7 : 13), yMid + 11.5, 7, 4);
 				ctx.fillStyle = colors["#"];
-				ctx.fillRect(
-					(xOld + x) / 2 * 27 + (parity ? 8 : 14),
-					(yOld + y) / 2 * 27 + 11.5,
-					5,
-					4,
-				);
-
+				ctx.fillRect(xMid + (parity ? 8 : 14), yMid + 11.5, 5, 4);
 				ctx.fillStyle = colors["."];
-				ctx.fillRect(
-					(xOld + x) / 2 * 27 + (parity ? 9 : 15),
-					(yOld + y) / 2 * 27 + 10.5,
-					3,
-					6,
-				);
+				ctx.fillRect(xMid + (parity ? 9 : 15), yMid + 10.5, 3, 6);
 			} else {
 				ctx.fillStyle = colors["~"];
-				ctx.fillRect(
-					(xOld + x) / 2 * 27 + 11.5,
-					(yOld + y) / 2 * 27 + (parity ? 7 : 13),
-					4,
-					7,
-				);
-
+				ctx.fillRect(xMid + 11.5, yMid + (parity ? 7 : 13), 4, 7);
 				ctx.fillStyle = colors["#"];
-				ctx.fillRect(
-					(xOld + x) / 2 * 27 + 11.5,
-					(yOld + y) / 2 * 27 + (parity ? 8 : 14),
-					4,
-					5,
-				);
-
+				ctx.fillRect(xMid + 11.5, yMid + (parity ? 8 : 14), 4, 5);
 				ctx.fillStyle = colors["."];
-				ctx.fillRect(
-					(xOld + x) / 2 * 27 + 10.5,
-					(yOld + y) / 2 * 27 + (parity ? 9 : 15),
-					6,
-					3,
-				);
+				ctx.fillRect(xMid + 10.5, yMid + (parity ? 9 : 15), 6, 3);
 			}
 		});
 	}, [depth, scale]);
