@@ -32,6 +32,7 @@ const baseKnot = `
 #########...#########......
 `.trim().split(/\r?\n/);
 
+/* `baseKnot` rotated by 90° */
 const baseKnot2 = baseKnot.map((_, i) =>
 	baseKnot[i].split("").map((_, j) =>
 		baseKnot[j][26-i]
@@ -45,7 +46,7 @@ const colors = {
 	"*": "#f00", // red
 };
 
-function hilbertPolyLine(depth: number) {
+function hilbertPolyline(depth: number): [number, number][] {
 	let pos_x = 0, pos_y = 0, dir_x = 1, dir_y = 0;
 	const result: Array<[number, number]> = [[pos_x, pos_y]];
 
@@ -98,7 +99,12 @@ export function App() {
 		const canvas = canvasRef.current;
 		if (!canvas) return;
 		const ctx = canvas.getContext("2d");
-		ctx.scale(scale, scale)
+		ctx.scale(scale, scale);
+
+		function box(symbol: string, x: number, y: number, w: number, h: number) {
+			ctx.fillStyle = colors[symbol];
+			ctx.fillRect(x, y, w, h);
+		}
 
 		// Draw (2**depth)**2 "endless knots"
 		for (let r = 0; r < n; r++) {
@@ -107,39 +113,33 @@ export function App() {
 				const c27 = c * 27;
 				const knot = (r+c) % 2 === 0 ? baseKnot : baseKnot2;
 				for (let i = 0; i < 27; i++) {
+					const knot_i = knot[i];
 					for (let j = 0; j < 27; j++) {
-						ctx.fillStyle = colors[knot[i][j]];
-						ctx.fillRect(c27 + i, r27 + j, 1, 1);
+						box(knot_i[j], c27 + i, r27 + j, 1, 1);
 					}
 				}
 			}
 		}
-		// Up to here the endless knots are disconnected.  Now we tweak the
-		// lines to connect the knots in a way similar to a "Hilbert polyline"
-		// (that is, one of the polylines used to approximate a Hilbert curve):
-		hilbertPolyLine(depth).map(([x, y], i, points) => {
+
+		// At this point the endless knots are still disconnected.  Now we tweak
+		// the lines to connect the knots in a way similar to a "Hilbert polyline":
+		hilbertPolyline(depth).map(([xNew, yNew], i, points) => {
 			if (i === 0) return;
 			const [xOld, yOld] = points[i-1];
-			const [xMid, yMid] = [(xOld + x) / 2 * 27, (yOld + y) / 2 * 27];
-			const parity = Boolean((Math.min(xOld, x) + Math.min(yOld, y)) % 2);
-			const [vertical, horizontal] = [x === xOld, y === yOld];
+			const [x, y] = [(xOld + xNew) / 2 * 27, (yOld + yNew) / 2 * 27];
+			const offset = (Math.min(xOld, xNew) + Math.min(yOld, yNew)) % 2 ? -3 : 3;
+			const [vertical, horizontal] = [xNew === xOld, yNew === yOld];
 			if (vertical === horizontal) {
 				throw "internal: connections should be either horizontal or vertical";
 			}
 			if (vertical) {
-				ctx.fillStyle = colors["~"];
-				ctx.fillRect(xMid + (parity ? 7 : 13), yMid + 11.5, 7, 4);
-				ctx.fillStyle = colors["#"];
-				ctx.fillRect(xMid + (parity ? 8 : 14), yMid + 11.5, 5, 4);
-				ctx.fillStyle = colors["."];
-				ctx.fillRect(xMid + (parity ? 9 : 15), yMid + 10.5, 3, 6);
+				box("~", x + offset + 10, y + 11.5, 7, 4);
+				box("#", x + offset + 11, y + 11.5, 5, 4);
+				box(".", x + offset + 12, y + 10.5, 3, 6);
 			} else {
-				ctx.fillStyle = colors["~"];
-				ctx.fillRect(xMid + 11.5, yMid + (parity ? 7 : 13), 4, 7);
-				ctx.fillStyle = colors["#"];
-				ctx.fillRect(xMid + 11.5, yMid + (parity ? 8 : 14), 4, 5);
-				ctx.fillStyle = colors["."];
-				ctx.fillRect(xMid + 10.5, yMid + (parity ? 9 : 15), 6, 3);
+				box("~", x + 11.5, y + offset + 10, 4, 7);
+				box("#", x + 11.5, y + offset + 11, 4, 5);
+				box(".", x + 10.5, y + offset + 12, 6, 3);
 			}
 		});
 	}, [depth, scale]);
