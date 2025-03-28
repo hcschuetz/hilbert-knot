@@ -1,7 +1,7 @@
 import { render } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-// This could be created programmatically, but it was easier to draw manually:
+// This could be given as vector graphics, but a grid was easier:
 const halfBaseKnot = `
 ......#########...#########
 ......#~~~~~~~#...#~~~~~~~#
@@ -23,13 +23,6 @@ const halfBaseKnot = `
 const baseKnot =
 	(halfBaseKnot + "~" + [...halfBaseKnot].reverse().join(""))
 	.split(/\r?\n/);
-
-/* `baseKnot` rotated by 90° */
-const baseKnot2 = baseKnot.map((_, i) =>
-	baseKnot[i].split("").map((_, j) =>
-		baseKnot[j][26-i]
-	).join("")
-);
 
 const colors = {
 	".": "#cdf", // light blue
@@ -82,18 +75,25 @@ export function App() {
 			ctx.fillRect(x, y, w, h);
 		}
 
-		// Draw n**2 "endless knots"
+		// Draw the first two "endless knots":
+		for (let i = 0; i < 27; i++) {
+			for (let j = 0; j < 27; j++) {
+				box(baseKnot[i][j]   , i   , j, 1, 1);
+				box(baseKnot[j][26-i], i+27, j, 1, 1); // offset and rotated by 90°
+			}
+		}
+		// Copy these knots all over the canvas via image data:
+		// (This is much faster than drawing each knot individually.
+		// We could optimize this even more by copying recursively and by also
+		// copying the connections below via image data.  But we are already fast
+		// enough.)
+		const nodeSize = 27 * scale;
+		const images = [0, nodeSize].map(offset =>
+			ctx.getImageData(offset, 0, nodeSize, nodeSize)
+		);
 		for (let r = 0; r < n; r++) {
-			const r27 = r * 27;
 			for (let c = 0; c < n; c++) {
-				const c27 = c * 27;
-				const knot = (r+c) % 2 === 0 ? baseKnot : baseKnot2;
-				for (let i = 0; i < 27; i++) {
-					const knot_i = knot[i];
-					for (let j = 0; j < 27; j++) {
-						box(knot_i[j], c27 + i, r27 + j, 1, 1);
-					}
-				}
+				ctx.putImageData(images[(r+c) % 2], c*nodeSize, r*nodeSize);
 			}
 		}
 
@@ -129,7 +129,7 @@ export function App() {
 				<output>{n} × {n}</output>
 
 				<label htmlFor="">scale</label>
-				<input type="range" min="1" max="5" step=".1" value={scale}
+				<input type="range" min="1" max="5" value={scale}
 					onChange={e => setScale(+e.currentTarget.value)}
 				/>
 				<output>{scale}</output>
