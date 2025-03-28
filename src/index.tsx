@@ -2,7 +2,7 @@ import { render } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
 // This could be created programmatically, but it was easier to draw manually:
-const baseKnot = `
+const halfBaseKnot = `
 ......#########...#########
 ......#~~~~~~~#...#~~~~~~~#
 ......#~#####~#...#~#####~#
@@ -16,21 +16,13 @@ const baseKnot = `
 #~##*##~##*******##~##*#...
 #~##*##~##*#####*##~##*#...
 #~##*########~########*####
-#~~#*#~~~~~~#~#~~~~~~#*#~~#
-####*########~########*##~#
-...#*##~##*#####*##~##*##~#
-...#*##~##*******##~##*##~#
-...#*##~###########~##*##~#
-#######~###########~#####~#
-#~~~~~#~#~~~~~~~~~#~#~~~~~#
-#~#####~###########~#######
-#~##*########~########*#...
-#~##********#~#********#...
-#~###########~##########...
-#~#####~#...#~#####~#......
-#~~~~~~~#...#~~~~~~~#......
-#########...#########......
-`.trim().split(/\r?\n/);
+#~~#*#~~~~~~#
+`.trim();
+
+// Make use of the knot symmetry:
+const baseKnot =
+	(halfBaseKnot + "~" + [...halfBaseKnot].reverse().join(""))
+	.split(/\r?\n/);
 
 /* `baseKnot` rotated by 90° */
 const baseKnot2 = baseKnot.map((_, i) =>
@@ -47,45 +39,29 @@ const colors = {
 };
 
 function hilbertPolyline(depth: number): [number, number][] {
-	let pos_x = 0, pos_y = 0, dir_x = 1, dir_y = 0;
+	let [pos_x, pos_y] = [0, 0], [dir_x, dir_y] = [1, 0];
 	const result: Array<[number, number]> = [[pos_x, pos_y]];
 
-	// Turtle operations using
+	// Turtle operations based on
 	// https://en.wikipedia.org/wiki/Hilbert_curve#Representation_as_Lindenmayer_system
-	function forward () { result.push([pos_x += dir_x, pos_y += dir_y]); }
-	function rotPlus () { [dir_x, dir_y] = [-dir_y, dir_x]; }
-	function rotMinus() { [dir_x, dir_y] = [dir_y, -dir_x]; }
-
-	function A(depth: number) {
+	function forward() { result.push([pos_x += dir_x, pos_y += dir_y]); }
+	function rotate(rot: number) { [dir_x, dir_y] = [-dir_y*rot, dir_x*rot]; }
+	function descend(depth: number, rot: number) {
 		if (depth-- === 0) return;
-		rotPlus();
-		B(depth)
+		rotate(rot);
+		descend(depth, -rot)
 		forward();
-		rotMinus();
-		A(depth);
+		rotate(-rot);
+		descend(depth, rot);
 		forward();
-		A(depth);
-		rotMinus();
+		descend(depth, rot);
+		rotate(-rot);
 		forward();
-		B(depth);
-		rotPlus();
-	}
-	function B(depth: number) {
-		if (depth-- === 0) return;
-		rotMinus();
-		A(depth);
-		forward();
-		rotPlus()
-		B(depth);
-		forward();
-		B(depth);
-		rotPlus();
-		forward();
-		A(depth);
-		rotMinus();
+		descend(depth, -rot);
+		rotate(rot);
 	}
 
-	A(depth);
+	descend(depth, 1);
 	return result;
 }
 
@@ -93,7 +69,7 @@ export function App() {
 	const [depth, setDepth] = useState(2);
 	const [scale, setScale] = useState(3);
 	const n = 1 << depth;
-	const totalSize = (1 << depth) * 27 * scale;
+	const totalSize = n * 27 * scale;
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	useEffect(() => {
 		const canvas = canvasRef.current;
@@ -106,7 +82,7 @@ export function App() {
 			ctx.fillRect(x, y, w, h);
 		}
 
-		// Draw (2**depth)**2 "endless knots"
+		// Draw n**2 "endless knots"
 		for (let r = 0; r < n; r++) {
 			const r27 = r * 27;
 			for (let c = 0; c < n; c++) {
@@ -150,7 +126,7 @@ export function App() {
 				<input type="range" min="0" max="4" value={depth}
 					onChange={e => setDepth(+e.currentTarget.value)}
 				/>
-				<output>{1 << depth} × {1 << depth}</output>
+				<output>{n} × {n}</output>
 
 				<label htmlFor="">scale</label>
 				<input type="range" min="1" max="5" step=".1" value={scale}
@@ -158,7 +134,7 @@ export function App() {
 				/>
 				<output>{scale}</output>
 			</div>
-      <canvas ref={canvasRef} width={totalSize} height={totalSize}></canvas>
+			<canvas ref={canvasRef} width={totalSize} height={totalSize}></canvas>
 		</div>
 	);
 }
